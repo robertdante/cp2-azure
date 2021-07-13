@@ -1,0 +1,49 @@
+---
+- name: añadir puertos
+  firewalld:
+    port: {{item}}
+    with_items:
+      - 6443/tcp
+      - 2379-2380/tcp
+      - 10250/tcp
+      - 10251/tcp
+      - 10252/tcp
+      - 10255/tcp
+
+- name: reload firewalld
+  service: name=firewalld state=reloaded
+  become: yes
+
+- name: configurando kubeadm
+  command: kubeadm config images pull
+
+- name: permitir acceso desde los workers
+  firewalld:
+    rich_rule: {{item}}
+    with_items:
+      - rule family=ipv4 source address=52.166.11.32 accept
+
+- name: reload firewalld
+  service: name=firewalld state=reloaded
+  become: yes
+
+- name: permitir acceso de los contenedores
+  command: firewall-cmd --zone=public --permanent --add-rich-rule 'rule family=ipv4 source address=172.17.0.0/16 accept'
+
+
+- name: reload firewalld
+  service: name=firewalld state=reloaded
+  become: yes
+
+- name: instalamos el plugin CNI
+  command: kubeadm init --pod-network-cidr 192.169.0.0/16
+
+- name: usar kubectl
+  command: export KUBECONFIG=/etc/kubernetes/admin.conf
+
+- name: autorizar al usuario root acceso al cluster
+  command: {{item}}
+  with_items:
+    - mkdir -p /root/.kube
+    - cp -i /etc/kubernetes/admin.conf /root/.kube/config
+    - chown $(id -u):$(id -g) /root/.kube/config

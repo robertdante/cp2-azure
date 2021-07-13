@@ -1,0 +1,84 @@
+---
+- name: crear partición
+  become: yes
+  parted:
+    device: /dev/sdb
+    number: 1
+    state: present
+
+- name: crear un volume group
+  become: yes
+  lvg:
+    vg: nfs-vg
+    pvs: /dev/sdb1
+    force: no
+    state: present
+
+- name: crear un logical volume
+  become: yes
+  lvol:
+    vg: nfs-vg
+    lv: nfs-lv
+    shrink: no
+    size: 100%FREE
+    force: no
+    state: present
+
+- name: crear xfs filesystem
+  become: yes
+  filesystem:
+    fstype: xfs
+    dev: /dev/nfs-vg/nfs-lv
+    force: yes
+
+
+- name: crear directorio para el punto de montaje
+  file:
+    path: /srv/nfs
+    state: directory
+    mode: '0755'
+
+- name: incluir logical volume en /etc/fstab
+  command: echo "/dev/data_vg/nfs_lv        /srv/nfs                xfs     defaults        0 0" >> /etc/fstab
+
+- name: instalar paquetes NFS
+  dnf: name={{item}} state=present
+  with_items:
+  - nfs-utils
+  - net-tools
+
+- name: activar nfs-server
+  become: yes
+  command: /usr/bin/systemctl enable nfs-server
+
+- name: iniciar nfs-server 
+  become: yes 
+  command: /usr/bin/systemctl start nfs-server
+ 
+- name:  configurar acceso al share de NFS
+  become: yes
+  lineinfile:
+    dest: /etc/exports
+    line: '{{ item }}'
+  with_items:
+    - '/srv/nfs	52.166.11.38(rw,sync)'
+    - '/srv/nfs	52.166.11.32(rw,sync)'
+
+#- name: aplicar nueva configuración
+
+
+- name: abrir puerto firewall
+  firewalld: service={{item}} permanent=yes state=enabled
+  with_items:
+  - nfs
+  - rpc-bind
+  - mountd
+
+- name: iniciar firewalld
+  become: yes
+  command: /usr/bin/systemctl start firewalld
+
+- name: reload firewalld
+  become: yes
+  command: /usr/bin/systemctl reload firewalld 
+

@@ -1,0 +1,37 @@
+---
+- name: incluir en ficher /etc/hosts
+
+
+
+- name: activar transparent masquerading
+  command: "{{item}}"
+  with_items:
+    modprobe br_netfilter
+    firewall-cmd --add-masquerade --permanent
+    
+- name: reload firewalld
+  service: name=firewalld state=reloaded
+
+- name: permitir tráfico con el cortafuegos
+
+
+- name: desactivar swap
+  shell: swapoff -a
+
+- name: eliminar linea del fichero /etc/fstab
+
+
+- name: instalar docker
+  dfn: name=docker-ce-20.10.6-3.el8 state=present
+
+- name: activar docker
+  service: name=docker state=started enabled=yes
+
+- name: configurar repo kubernetes
+
+
+- name: instalar kubernetes
+  command: dnf install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+
+- name: activar kubernetes
+  service: name=kubelet state=started enabled=yes

@@ -1,0 +1,14 @@
+---
+- name: añadir puertos
+  firewalld:
+    port: {{item}}
+    with_items:
+      - 10250/tcp
+      - 30000-32767/tcp
+
+- name: reload firewalld
+  service: name=firewalld state=reloaded
+
+- name: ejecución kubeadmin init
+  command: kubeadm join 192.168.1.110:6443 --token gmk4le.8gsfpknu99k78qut --discovery-token-ca-cert-hash sha256:d2cd35c9ab95f4061aa9d9b993f7e8742b2307516a3632b27ea10b64baf8cd71 
+

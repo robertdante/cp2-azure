@@ -1,0 +1,18 @@
+--- 
+- name: configuración previa común
+  hosts: all
+  remote_user: adminUsername
+  become: yes
+  gather_facts: true
+
+  roles:
+    - conf_prev
+
+- name: configuración nfs
+  hosts: nfs
+  remote_user: adminUsername
+  become: yes
+  gather_facts: true
+
+  roles:
+    - nfs 

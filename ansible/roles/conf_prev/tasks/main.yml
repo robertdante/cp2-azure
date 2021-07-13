@@ -1,0 +1,31 @@
+---
+- name: configurar sincronización horaria
+  command: timedatectl set-timezone Europe/Madrid
+
+- name: instalar chrony
+  become: yes
+  dnf: name=chrony state=present
+
+- name: activar chronyd
+  become: yes
+  command: /usr/bin/systemctl enable chronyd
+
+- name: iniciar chronyd 
+  become: yes
+  command: /usr/bin/systemctl start chronyd 
+
+- name: set ntp
+  become: yes
+  command: timedatectl set-ntp true
+
+- name: desinstalar selinux
+  become: yes
+  command: sed -i s/=enforcing/=disabled/g /etc/selinux/config
+
+- name: instalación paquetes requeridos
+  become: yes
+  dnf: name={{item}} state=present
+  with_items:
+  - nfs-utils
+  - nfs4-acl-tools
+  - wget
