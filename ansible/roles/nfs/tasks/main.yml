@@ -1,16 +1,20 @@
 ---
-- name: crear partición
+- name: crear nueva partición
   become: yes
   parted:
-    device: /dev/sdb
+    device: /dev/sda
     number: 1
     state: present
+
+#- name: desmontar disk
+#  become: yes
+#  shell: umount -f /mnt/resource
 
 - name: crear un volume group
   become: yes
   lvg:
     vg: nfs-vg
-    pvs: /dev/sdb1
+    pvs: /dev/sda1
     force: no
     state: present
 
@@ -61,10 +65,15 @@
     dest: /etc/exports
     line: '{{ item }}'
   with_items:
-    - '/srv/nfs	52.166.11.38(rw,sync)'
-    - '/srv/nfs	52.166.11.32(rw,sync)'
+    - '/srv/nfs	10.0.1.10(rw,sync)'
+    - '/srv/nfs	10.0.1.11(rw,sync)'
 
-#- name: aplicar nueva configuración
+- name: aplicar nueva configuración
+  become: yes
+  command: '{{ item }}'
+  with_items:
+    - exportfs -r
+    - exportfs -s
 
 
 - name: abrir puerto firewall

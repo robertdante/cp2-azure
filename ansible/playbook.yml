@@ -15,4 +15,13 @@
   gather_facts: true
 
   roles:
-    - nfs 
+    - nfs
+
+- name: configuración master y workers
+  hosts: master, workers
+  remote_user: adminUsername
+  become: yes
+  gather_facts: true
+
+  roles:
+    - master_workers 

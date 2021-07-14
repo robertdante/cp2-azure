@@ -1,0 +1,91 @@
+---
+- name: incluir en fichero /etc/hosts
+  become: yes
+  lineinfile:
+    dest: /etc/hosts
+    line: '{{ item }}'
+  with_items:
+    - '10.0.1.10 master'
+    - '10.0.1.11 worker'
+    - '10.0.1.12 nfs'
+
+- name: activar firewalld
+  become: yes
+  command: /usr/bin/systemctl start firewalld
+
+- name: activar transparent masquerading
+  become: yes
+  command: "{{item}}"
+  with_items:
+    - modprobe br_netfilter
+    - firewall-cmd --add-masquerade --permanent
+    
+- name: reload firewalld
+  become: yes
+  command: /usr/bin/systemctl reload firewalld
+
+- name: crear directorio sysctl.d
+  become: yes
+  file:
+    path: /etc/sysctl.d
+    state: directory
+
+- name: permitir tráfico con el cortafuegos
+  become: yes
+  copy:
+    src: k8s.conf
+    dest: /etc/sysctl.d/k8s.conf
+
+- name: aplicar cambios en k8s.conf
+  become: yes
+  command: sysctl --system
+
+- name: desactivar swap
+  shell: swapoff -a
+
+- name: eliminar linea del fichero /etc/fstab
+  lineinfile:
+    path: /etc/fstab
+    regexp: "/dev/mapper/cs-swap     none                    swap    defaults        0 0"
+    state: absent
+
+- name: Instalar Docker
+  become: yes
+  command: '{{ item }}'
+  with_items:
+    - yum -y remove podman
+    - dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
+    - dnf install docker-ce-20.10.6-3.el8 -y
+
+- name: Activar docker
+  become: yes
+  command: /usr/bin/systemctl enable docker
+
+- name: Iniciar docker
+  become: yes
+  command: /usr/bin/systemctl start docker
+
+- name: Añadir usuario ansible al docker group
+  become: yes
+  user:
+    name: "adminUsername"
+    groups: docker
+    append: yes
+
+
+- name: configurar repo kubernetes
+  become: yes
+  copy:
+    src: kubernetes.repo
+    dest: /etc/yum.repos.d/kubernetes.repo
+
+
+- name: instalar kubernetes
+  become: yes
+  command: dnf install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
+
+- name: activar kubernetes
+  command: /usr/bin/systemctl enable kubelet
+
+- name: iniciar kubernetes
+  command: /usr/bin/systemctl start kubelet
