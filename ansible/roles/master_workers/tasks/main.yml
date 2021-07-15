@@ -89,3 +89,13 @@
 
 - name: iniciar kubernetes
   command: /usr/bin/systemctl start kubelet
+
+- name: abrir puertos sdn
+  become: yes
+  command: "{{ item }}"
+  with_items:
+    - firewall-cmd --permanent --add-port=8285/udp
+    - firewall-cmd --permanent --add-port=8472/udp
+
+- name: reload firewalld
+  command: /usr/bin/systemctl reload firewalld

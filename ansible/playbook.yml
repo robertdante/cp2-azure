@@ -33,4 +33,13 @@
   gather_facts: true
 
   roles:
-    - kubemaster 
+    - kubemaster
+
+- name: configuración workers
+  hosts: workers
+  remote_user: adminUsername
+  become: yes
+  gather_facts: true
+
+  roles:
+    - workers 

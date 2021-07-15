@@ -1,0 +1,14 @@
+---
+- name: añadir puertos
+  command: "{{ item }}"
+  with_items:
+    - firewall-cmd --zone=public --permanent --add-port=10250/tcp
+    - firewall-cmd --zone=public --permanent --add-port=30000-32767/tcp  
+
+- name: reload firewalld
+  become: yes
+  command: /usr/bin/systemctl reload firewalld
+
+- name: unirse al cluster
+  command: "{{ hostvars['40.68.63.72']['kubernetes_join_command'] }} --ignore-preflight-errors Swap"
+
