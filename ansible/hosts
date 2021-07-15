@@ -1,11 +1,12 @@
 [all:vars]
 ansible_user=adminUsername
+ansible_python_interpreter=/usr/bin/python3
 
 [master]
-20.67.97.110
+40.68.63.72
 
 [workers]
-20.105.186.193
+40.68.57.239
 
 [nfs]
-20.67.97.69
+40.68.57.242

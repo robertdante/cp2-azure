@@ -1,49 +1,66 @@
 ---
 - name: añadir puertos
-  firewalld:
-    port: {{item}}
-    with_items:
-      - 6443/tcp
-      - 2379-2380/tcp
-      - 10250/tcp
-      - 10251/tcp
-      - 10252/tcp
-      - 10255/tcp
+  become: yes
+  command: "{{item}}"
+  with_items:
+    - firewall-cmd --permanent --add-port=6443/tcp
+    - firewall-cmd --permanent --add-port=2379-2380/tcp
+    - firewall-cmd --permanent --add-port=10250/tcp
+    - firewall-cmd --permanent --add-port=10251/tcp
+    - firewall-cmd --permanent --add-port=10252/tcp
+    - firewall-cmd --permanent --add-port=10255/tcp
 
 - name: reload firewalld
-  service: name=firewalld state=reloaded
   become: yes
+  command: /usr/bin/systemctl reload firewalld
 
 - name: configurando kubeadm
   command: kubeadm config images pull
 
 - name: permitir acceso desde los workers
   firewalld:
-    rich_rule: {{item}}
-    with_items:
-      - rule family=ipv4 source address=52.166.11.32 accept
+    rich_rule: rule family=ipv4 source address=10.0.1.11 accept
+    state: enabled
 
 - name: reload firewalld
-  service: name=firewalld state=reloaded
   become: yes
+  command: /usr/bin/systemctl reload firewalld
 
 - name: permitir acceso de los contenedores
-  command: firewall-cmd --zone=public --permanent --add-rich-rule 'rule family=ipv4 source address=172.17.0.0/16 accept'
-
+  firewalld:
+    rich_rule: rule family=ipv4 source address=172.17.0.1/16 accept
+    state: enabled
 
 - name: reload firewalld
-  service: name=firewalld state=reloaded
   become: yes
+  command: /usr/bin/systemctl reload firewalld
 
 - name: instalamos el plugin CNI
+  become: yes
+  ignore_errors: True
   command: kubeadm init --pod-network-cidr 192.169.0.0/16
 
-- name: usar kubectl
-  command: export KUBECONFIG=/etc/kubernetes/admin.conf
+- name: join command
+  become: yes
+  shell: kubeadm token create --print-join-command
+  register: k8sjc
+
+- name: guardar Join command
+  become: yes
+  set_fact:
+    kubernetes_join_command: "{{ k8sjc.stdout }}"
 
 - name: autorizar al usuario root acceso al cluster
-  command: {{item}}
+  become: yes
+  command: "{{ item }}"
+  async: 60
+  poll: 60
   with_items:
     - mkdir -p /root/.kube
     - cp -i /etc/kubernetes/admin.conf /root/.kube/config
-    - chown $(id -u):$(id -g) /root/.kube/config
+
+- name: chown username
+  file:
+    path: /root/.kube/config 
+    owner: "{{ ansible_effective_user_id }}"
+    group: "{{ ansible_effective_group_id }}"
