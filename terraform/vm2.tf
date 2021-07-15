@@ -2,7 +2,7 @@
 # https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/linux_virtual_machine
 
 resource "azurerm_linux_virtual_machine" "VM2" {
-    name                = "my-second-azure-vm"
+    name                = "worker"
     resource_group_name = azurerm_resource_group.rg.name
     location            = azurerm_resource_group.rg.location
     size                = var.vm_size

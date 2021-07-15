@@ -1,12 +1,16 @@
+master ansible_host=40.113.134.227
+worker ansible_host=13.80.50.88
+nfs ansible_host=13.80.50.92
+
 [all:vars]
 ansible_user=adminUsername
 ansible_python_interpreter=/usr/bin/python3
 
 [master]
-40.68.63.72
+master
 
 [workers]
-40.68.57.239
+worker
 
 [nfs]
-40.68.57.242
+nfs
