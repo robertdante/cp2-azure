@@ -1,0 +1,10 @@
+---
+- name: instalar ingress controller
+  become: yes
+  command: kubectl apply -f https://raw.githubusercontent.com/haproxytech/kubernetes-ingress/v1.5/deploy/haproxy-ingress.yaml
+
+- name: creacion namespace
+  become: yes
+  command: kubectl get namespaces
+
+

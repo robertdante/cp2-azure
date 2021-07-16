@@ -68,4 +68,3 @@
 - name: descargar  manifiesto calico
   command: kubectl apply -f https://docs.projectcalico.org/manifests/canal.yaml
 
-

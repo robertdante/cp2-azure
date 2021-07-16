@@ -42,4 +42,14 @@
   gather_facts: true
 
   roles:
-    - workers 
+    - workers
+
+- name: ingress controller
+  hosts: master
+  remote_user: adminUsername
+  become: yes
+  gather_facts: true
+
+  roles:
+    - ingress
+
