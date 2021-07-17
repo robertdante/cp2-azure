@@ -10,5 +10,7 @@
   command: /usr/bin/systemctl reload firewalld
 
 - name: unirse al cluster
+  become: yes
+  ignore_errors: True
   command: "{{ hostvars['master']['kubernetes_join_command'] }} --ignore-preflight-errors Swap"
 

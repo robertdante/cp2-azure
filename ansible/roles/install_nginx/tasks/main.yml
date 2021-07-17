@@ -1,0 +1,7 @@
+---
+- name: deploy nginx
+  ignore_errors: True
+  command: kubectl create deployment nginx --image=nginx
+
+- name: crear nodeport
+  command: kubectl create service nodeport nginx --tcp=80:80

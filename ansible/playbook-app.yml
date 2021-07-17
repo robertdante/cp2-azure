@@ -1,0 +1,9 @@
+---
+- name: deploy nginx
+  hosts: master
+  remote_user: adminUsername
+  become: yes
+  gather_facts: true
+
+  roles:
+    - install_nginx
