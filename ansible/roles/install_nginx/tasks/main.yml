@@ -5,3 +5,4 @@
 
 - name: crear nodeport
   command: kubectl create service nodeport nginx --tcp=80:80
+

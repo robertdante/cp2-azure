@@ -1,6 +1,6 @@
-master ansible_host=20.101.34.61
-worker ansible_host=20.101.38.173
-nfs ansible_host=20.105.136.2
+master ansible_host=20.101.112.99
+worker ansible_host=20.101.112.100
+nfs ansible_host=20.101.112.81
 
 [all:vars]
 ansible_user=adminUsername
